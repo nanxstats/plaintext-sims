@@ -28,7 +28,9 @@ def plot_results(df: pd.DataFrame, output_dir: Path, metrics: list[str]) -> None
             + labs(title=metric.replace("_", " ").title(), x="Condition", y=metric)
             + theme(legend_position="none")
         )
-        plot.save(filename=str(output_dir / f"{metric}_boxplot.png"), dpi=300)
+        plot.save(
+            filename=str(output_dir / f"{metric}_boxplot.png"), dpi=300, verbose=False
+        )
 
     trade = (
         df.groupby("condition")[["total_calendar_time", "num_late_defects"]]
@@ -55,7 +57,9 @@ def plot_results(df: pd.DataFrame, output_dir: Path, metrics: list[str]) -> None
         )
     )
     trade_plot.save(
-        filename=str(output_dir / "tradeoff_time_vs_late_defects.png"), dpi=300
+        filename=str(output_dir / "tradeoff_time_vs_late_defects.png"),
+        dpi=300,
+        verbose=False,
     )
 
 

@@ -2,8 +2,9 @@
 
 from __future__ import annotations
 
-from collections.abc import Iterable
+from collections.abc import Generator
 from dataclasses import dataclass
+from typing import TypedDict
 
 import numpy as np
 import pandas as pd
@@ -24,7 +25,22 @@ class WorkflowParams:
     latent_defect_fix_time: float
 
 
-TaskSpec = dict[str, dict[str, object]]
+class TaskSpec(TypedDict):
+    resource: str
+    needs_lead: bool
+
+
+class ProjectMetrics(TypedDict):
+    total_calendar_time: float
+    num_rework_cycles: int
+    prop_defects_caught_early: float
+    num_late_defects: int
+    handover_delay: float
+
+
+class ExperimentRecord(ProjectMetrics):
+    condition: str
+    seed: int
 
 
 def _lognormal_duration(
@@ -36,7 +52,7 @@ def _lognormal_duration(
 
 def run_project(
     params: WorkflowParams, resources: dict[str, int], seed: int
-) -> dict[str, float]:
+) -> ProjectMetrics:
     """Run one simulated project and return metrics."""
     rng = np.random.default_rng(seed)
     env = simpy.Environment()
@@ -54,7 +70,7 @@ def run_project(
         "qc_and_reconcile",
         "reporting_package",
     ]
-    task_resources: TaskSpec = {
+    task_resources: dict[str, TaskSpec] = {
         "clarify_requirements": {"resource": "statistician", "needs_lead": True},
         "adam_programming": {"resource": "programmer", "needs_lead": False},
         "tlf_programming": {"resource": "programmer", "needs_lead": False},
@@ -67,13 +83,14 @@ def run_project(
     rework_cycles = 0
     handover_delay = 0.0
 
-    def perform_task(task_name: str) -> Iterable[float]:
+    def perform_task(task_name: str) -> Generator[simpy.events.Event, None, None]:
         nonlocal latent_defects, early_catches, rework_cycles, handover_delay
         spec = task_resources[task_name]
-        with res[spec["resource"]].request() as req:
+        resource_name = spec["resource"]
+        with res[resource_name].request() as req:
             yield req
             lead_missing = rng.random() < params.lead_unavailability_prob
-            if spec.get("needs_lead") and lead_missing:
+            if spec["needs_lead"] and lead_missing:
                 delay = params.handover_penalty_days * rng.uniform(0.8, 1.2)
                 handover_delay += delay
                 yield env.timeout(delay)
@@ -98,7 +115,7 @@ def run_project(
                 if rng.random() < params.late_defect_prob:
                     latent_defects += 1
 
-    def qc_stage() -> Iterable[float]:
+    def qc_stage() -> Generator[simpy.events.Event, None, None]:
         nonlocal latent_defects, rework_cycles
         yield from perform_task("qc_and_reconcile")
         if latent_defects:
@@ -111,7 +128,7 @@ def run_project(
                 yield env.timeout(fix_time)
             latent_defects = 0
 
-    def project_flow() -> Iterable[float]:
+    def project_flow() -> Generator[simpy.events.Event, None, None]:
         for name in task_order:
             if name == "qc_and_reconcile":
                 yield from qc_stage()
@@ -126,7 +143,7 @@ def run_project(
     prop_defects_caught_early = early_catches / total_defects if total_defects else 0.0
 
     return {
-        "total_calendar_time": env.now,
+        "total_calendar_time": float(env.now),
         "num_rework_cycles": rework_cycles,
         "prop_defects_caught_early": prop_defects_caught_early,
         "num_late_defects": late_defects,
@@ -144,11 +161,15 @@ def run_experiment(
     """Run many replications for one condition."""
     rng = np.random.default_rng(seed)
     seeds = rng.integers(0, 1_000_000_000, size=replications)
-    records = []
+    records: list[ExperimentRecord] = []
     for sim_seed in tqdm(seeds, desc=f"Sim {condition_name}", leave=False):
-        result = run_project(params, resources=resources, seed=int(sim_seed))
-        result.update({"condition": condition_name, "seed": int(sim_seed)})
-        records.append(result)
+        metrics = run_project(params, resources=resources, seed=int(sim_seed))
+        record: ExperimentRecord = {
+            **metrics,
+            "condition": condition_name,
+            "seed": int(sim_seed),
+        }
+        records.append(record)
     return pd.DataFrame(records)
 
 

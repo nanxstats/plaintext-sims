@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from typing import SupportsFloat, cast
+
 import numpy as np
 import pandas as pd
 
@@ -67,13 +69,18 @@ def format_summary_text(df: pd.DataFrame) -> str:
             df.groupby("condition")[metric]
             .agg(["mean", "median"])
             .rename(columns={"mean": "mean", "median": "median"})
+            .astype(float)
         )
-        delta = summary.loc["mixed", "mean"] - summary.loc["plaintext", "mean"]
+        mixed_mean_raw = cast(SupportsFloat, summary.loc["mixed", "mean"])
+        plaintext_mean_raw = cast(SupportsFloat, summary.loc["plaintext", "mean"])
+        mixed_mean = float(mixed_mean_raw)
+        plaintext_mean = float(plaintext_mean_raw)
+        delta = mixed_mean - plaintext_mean
         direction = "plaintext faster" if delta > 0 else "plaintext slower"
         lines.append(
             f"{metric.replace('_', ' ')}: "
-            f"plaintext mean={summary.loc['plaintext', 'mean']:.1f}, "
-            f"mixed mean={summary.loc['mixed', 'mean']:.1f}, "
+            f"plaintext mean={plaintext_mean:.1f}, "
+            f"mixed mean={mixed_mean:.1f}, "
             f"mixed-plaintext={delta:+.1f} ({direction})"
         )
     intro = (

@@ -31,7 +31,7 @@ jobs:
       - name: Test with pytest
         run: |
           pip install pytest pytest-cov
-          pytest --cov=tinytopics --cov-report=xml
+          pytest --cov=plaintext_sims --cov-report=xml
 
       # - name: Upload coverage reports to Codecov
       #   uses: codecov/codecov-action@v4
@@ -53,4 +53,4 @@ jobs:
       - name: Test with pytest
         run: |
           pip install pytest pytest-cov
-          pytest --cov=tinytopics --cov-report=xml
+          pytest --cov=plaintext_sims --cov-report=xml

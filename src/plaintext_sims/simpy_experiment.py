@@ -2,9 +2,9 @@
 
 from __future__ import annotations
 
+from collections.abc import Iterable
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Dict, Iterable, List
 
 import numpy as np
 import pandas as pd
@@ -23,7 +23,7 @@ from plotnine import (
 
 @dataclass
 class WorkflowParams:
-    base_task_times: Dict[str, float]
+    base_task_times: dict[str, float]
     duration_sigma: float
     miscommunication_prob: float
     late_defect_prob: float
@@ -34,7 +34,7 @@ class WorkflowParams:
     latent_defect_fix_time: float
 
 
-TaskSpec = Dict[str, Dict[str, object]]
+TaskSpec = dict[str, dict[str, object]]
 
 
 def _lognormal_duration(
@@ -45,8 +45,8 @@ def _lognormal_duration(
 
 
 def run_project(
-    params: WorkflowParams, resources: Dict[str, int], seed: int
-) -> Dict[str, float]:
+    params: WorkflowParams, resources: dict[str, int], seed: int
+) -> dict[str, float]:
     """Run one simulated project and return metrics."""
     rng = np.random.default_rng(seed)
     env = simpy.Environment()
@@ -57,7 +57,7 @@ def run_project(
         "qc": simpy.Resource(env, capacity=resources["qc"]),
     }
 
-    task_order: List[str] = [
+    task_order: list[str] = [
         "clarify_requirements",
         "adam_programming",
         "tlf_programming",
@@ -149,7 +149,7 @@ def run_project(
 def run_experiment(
     condition_name: str,
     params: WorkflowParams,
-    resources: Dict[str, int],
+    resources: dict[str, int],
     replications: int,
     seed: int,
 ) -> pd.DataFrame:
@@ -164,7 +164,7 @@ def run_experiment(
     return pd.DataFrame(records)
 
 
-def summarize_metrics(df: pd.DataFrame, metrics: List[str]) -> pd.DataFrame:
+def summarize_metrics(df: pd.DataFrame, metrics: list[str]) -> pd.DataFrame:
     """Compute descriptive statistics for each metric by condition."""
     stats = []
     for cond, group in df.groupby("condition"):
@@ -191,7 +191,7 @@ def bootstrap_difference(
     condition_b: str,
     reps: int,
     rng: np.random.Generator,
-) -> Dict[str, float]:
+) -> dict[str, float]:
     """Bootstrap the difference in means between two conditions."""
     a = df[df["condition"] == condition_a][metric].to_numpy()
     b = df[df["condition"] == condition_b][metric].to_numpy()
@@ -211,7 +211,7 @@ def bootstrap_difference(
     }
 
 
-def plot_results(df: pd.DataFrame, output_dir: Path, metrics: List[str]) -> None:
+def plot_results(df: pd.DataFrame, output_dir: Path, metrics: list[str]) -> None:
     """Create quick comparative plots with plotnine (ggplot-style)."""
     output_dir.mkdir(parents=True, exist_ok=True)
     for metric in metrics:

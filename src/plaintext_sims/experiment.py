@@ -8,6 +8,7 @@ from dataclasses import dataclass
 import numpy as np
 import pandas as pd
 import simpy
+from tqdm.auto import tqdm
 
 
 @dataclass
@@ -144,7 +145,7 @@ def run_experiment(
     rng = np.random.default_rng(seed)
     seeds = rng.integers(0, 1_000_000_000, size=replications)
     records = []
-    for sim_seed in seeds:
+    for sim_seed in tqdm(seeds, desc=f"Sim {condition_name}", leave=False):
         result = run_project(params, resources=resources, seed=int(sim_seed))
         result.update({"condition": condition_name, "seed": int(sim_seed)})
         records.append(result)

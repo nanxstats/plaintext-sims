@@ -1,5 +1,6 @@
 # plaintext-sims
 
+![Python versions](https://img.shields.io/badge/python-3.10%20%7C%203.11%20%7C%203.12%20%7C%203.13%20%7C%203.14-blue)
 [![CI Tests](https://github.com/nanxstats/plaintext-sims/actions/workflows/ci-tests.yml/badge.svg)](https://github.com/nanxstats/plaintext-sims/actions/workflows/ci-tests.yml)
 [![Checked with mypy](https://www.mypy-lang.org/static/mypy_badge.svg)](https://mypy-lang.org/)
 

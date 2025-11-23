@@ -1,0 +1,39 @@
+simpy:
+  seed: 2025
+  replications: 500
+  bootstrap_reps: 400
+  resources:
+    statisticians: 3
+    programmers: 4
+    qc: 2
+  params:
+    plaintext:
+      base_task_times:
+        clarify_requirements: 18
+        adam_programming: 28
+        tlf_programming: 26
+        qc_and_reconcile: 18
+        reporting_package: 12
+      duration_sigma: 0.35
+      miscommunication_prob: 0.12
+      late_defect_prob: 0.05
+      early_detection_prob: 0.65
+      handover_penalty_days: 4
+      lead_unavailability_prob: 0.06
+      base_rework_scale: 0.6
+      latent_defect_fix_time: 5
+    mixed:
+      base_task_times:
+        clarify_requirements: 15
+        adam_programming: 24
+        tlf_programming: 22
+        qc_and_reconcile: 15
+        reporting_package: 10
+      duration_sigma: 0.3
+      miscommunication_prob: 0.25
+      late_defect_prob: 0.12
+      early_detection_prob: 0.25
+      handover_penalty_days: 9
+      lead_unavailability_prob: 0.12
+      base_rework_scale: 0.9
+      latent_defect_fix_time: 7

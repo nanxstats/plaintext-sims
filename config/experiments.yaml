@@ -1,7 +1,7 @@
 simpy:
   seed: 2025
-  replications: 500
-  bootstrap_reps: 400
+  replications: 10000
+  bootstrap_reps: 1000
   resources:
     statisticians: 3
     programmers: 4

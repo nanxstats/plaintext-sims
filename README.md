@@ -13,7 +13,8 @@ uv run python -m plaintext_sims.run
 
 Outputs land in `results/` as CSV tables, PNG plots, and a short text summary.
 Adjust parameters in `config/experiments.yaml` and re-run to explore
-alternative assumptions.
+alternative assumptions. Defaults: 10,000 replications per arm;
+1,000 bootstrap resamples per metric.
 
 ## Experiment design
 

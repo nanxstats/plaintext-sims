@@ -254,7 +254,8 @@ def plot_results(df: pd.DataFrame, output_dir: Path, metrics: list[str]) -> None
 
 
 def format_summary_text(df: pd.DataFrame) -> str:
-    """Compose a concise narrative (150-250 words) describing the discrete-event simulation."""
+    """Compose a concise narrative (150-250 words) describing the
+    discrete-event simulation."""
     metrics = [
         "total_calendar_time",
         "num_rework_cycles",
@@ -275,19 +276,23 @@ def format_summary_text(df: pd.DataFrame) -> str:
             f"mixed mean={summary.loc['mixed', 'mean']:.1f}, mixed-plaintext={delta:+.1f} ({direction})"
         )
     narrative = (
-        "We modeled a stylized Phase III analysis pipeline in SimPy with tasks for clarifying "
-        "requirements, ADaM programming, TLF programming, QC, and reporting. Parameter differences "
-        "captured the extra upfront discipline of plaintext repos (more time per change) versus "
-        "the miscommunication and handover risk of mixed email/document workflows. Each task "
-        "duration followed a mildly skewed log-normal, with miscommunication creating either early "
-        "rework or latent defects that surfaced during QC. Across 500 replications per arm, "
-        "plaintext runs were slower per change but paid off through fewer rework loops and faster "
-        "recovery from lead turnover. Bootstrap intervals for each metric are written alongside the "
+        "We modeled a stylized Phase III analysis pipeline in SimPy with tasks"
+        "for clarifying requirements, ADaM programming, TLF programming, QC,"
+        "and reporting. Parameter differences captured the extra upfront"
+        "discipline of plaintext repos (more time per change) versus "
+        "the miscommunication and handover risk of mixed email/document workflows."
+        "Each task duration followed a mildly skewed log-normal, with"
+        "miscommunication creating either early rework or latent defects that"
+        "surfaced during QC. Across 500 replications per arm, "
+        "plaintext runs were slower per change but paid off through fewer"
+        "rework loops and faster recovery from lead turnover."
+        "Bootstrap intervals for each metric are written alongside the "
         "CSV outputs. Key contrasts:\n"
         + "\n".join(f"- {line}" for line in lines)
-        + "\nThese synthetic numbers are illustrative only but show how Git-first practices could "
-        "trade a small upfront cost for meaningful reductions in late defects and schedule risk. "
-        "The model omits cross-study portfolio effects and assumes resource pools remain stable, "
+        + "\nThese synthetic numbers are illustrative only but show how Git-first"
+        "practices could trade a small upfront cost for meaningful reductions"
+        "in late defects and schedule risk. The model omits cross-study"
+        "portfolio effects and assumes resource pools remain stable, "
         "so the direction, not the absolute magnitude, should guide interpretation."
     )
     return narrative

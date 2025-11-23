@@ -90,7 +90,7 @@ def format_summary_text(df: pd.DataFrame) -> str:
         "creating either early rework or latent defects that surfaced during QC."
     )
     payoff = (
-        "Across 500 replications per arm, plaintext runs were slower per change but "
+        "Across 10000 replications per arm, plaintext runs were slower per change but "
         "paid off through fewer rework loops and faster recovery from lead turnover. "
         "Bootstrap intervals for each metric are written alongside the CSV outputs."
     )

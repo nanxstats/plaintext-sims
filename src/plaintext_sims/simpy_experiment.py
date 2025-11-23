@@ -272,8 +272,10 @@ def format_summary_text(df: pd.DataFrame) -> str:
         delta = summary.loc["mixed", "mean"] - summary.loc["plaintext", "mean"]
         direction = "plaintext faster" if delta > 0 else "plaintext slower"
         lines.append(
-            f"{metric.replace('_', ' ')}: plaintext mean={summary.loc['plaintext', 'mean']:.1f}, "
-            f"mixed mean={summary.loc['mixed', 'mean']:.1f}, mixed-plaintext={delta:+.1f} ({direction})"
+            f"{metric.replace('_', ' ')}: "
+            f"plaintext mean={summary.loc['plaintext', 'mean']:.1f}, "
+            f"mixed mean={summary.loc['mixed', 'mean']:.1f}, "
+            f"mixed-plaintext={delta:+.1f} ({direction})"
         )
     narrative = (
         "We modeled a stylized Phase III analysis pipeline in SimPy with tasks"

@@ -1,5 +1,8 @@
 # plaintext-sims
 
+[![CI Tests](https://github.com/nanxstats/plaintext-sims/actions/workflows/ci-tests.yml/badge.svg)](https://github.com/nanxstats/plaintext-sims/actions/workflows/ci-tests.yml)
+[![Checked with mypy](https://www.mypy-lang.org/static/mypy_badge.svg)](https://mypy-lang.org/)
+
 Computational experiments for *The Plaintext Statistician* exploring
 plaintext (Git-first) versus mixed (email/Office) workflows.
 A stylized SimPy discrete-event model contrasts the two.

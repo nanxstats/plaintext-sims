@@ -1,12 +1,17 @@
 from __future__ import annotations
 
+import sys
 from pathlib import Path
 
 import pandas as pd
+import pytest
 
 from plaintext_sims.plot import plot_results
 
 
+@pytest.mark.skipif(
+    sys.platform == "win32", reason="Does not work on GitHub Actions Windows runners"
+)
 def test_plot_results_writes_files(tmp_path: Path) -> None:
     df = pd.DataFrame(
         {

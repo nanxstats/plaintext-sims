@@ -75,8 +75,8 @@ def plot_results(df: pd.DataFrame, output_dir: Path, metrics: list[str]) -> None
         filename=str(output_dir / "metrics_ridgeline.png"),
         dpi=300,
         verbose=False,
-        width=4 * len(plots),
-        height=6,
+        width=6,
+        height=4 * len(plots),
     )
 
 

@@ -51,7 +51,7 @@ def plot_results(df: pd.DataFrame, output_dir: Path, metrics: list[str]) -> None
             + scale_fill_aaas()
             + coord_flip()
             + labs(title=metric.replace("_", " ").title(), x="", y="")
-            + scale_y_continuous(expand=(0, 0.1))
+            + scale_y_continuous(expand=(0.05, 0))
             + theme_classic(base_size=12)
             + theme(
                 legend_position="none",

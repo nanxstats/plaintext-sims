@@ -5,6 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
+from ggsci import scale_fill_aaas  # type: ignore[import-untyped]
 from plotnine import (
     aes,
     coord_flip,
@@ -26,14 +27,9 @@ def plot_results(df: pd.DataFrame, output_dir: Path, metrics: list[str]) -> None
     # Create individual ridgeline plots for each metric
     plots = []
     for metric in metrics:
-        # Add mean value for fill aesthetic
-        df_with_mean = df.copy()
-        df_with_mean[f"{metric}_mean"] = df_with_mean.groupby("condition")[
-            metric
-        ].transform("mean")
-
         plot = (
-            ggplot(df_with_mean, aes(x="condition", y=metric, fill=f"{metric}_mean"))
+            ggplot(df, aes(x="condition", y=metric, fill="condition"))
+            # First layer: filled violins
             + geom_violin(
                 position="identity",
                 style="right",
@@ -42,6 +38,17 @@ def plot_results(df: pd.DataFrame, output_dir: Path, metrics: list[str]) -> None
                 trim=False,
                 alpha=0.85,
             )
+            # Second layer: black outline on top
+            + geom_violin(
+                position="identity",
+                style="right",
+                width=1.5,
+                color="black",
+                fill="none",
+                trim=False,
+                size=0.2,
+            )
+            + scale_fill_aaas()
             + coord_flip()
             + labs(title=metric.replace("_", " ").title(), x="", y="")
             + scale_y_continuous(expand=(0, 0.1))
@@ -65,10 +72,10 @@ def plot_results(df: pd.DataFrame, output_dir: Path, metrics: list[str]) -> None
 
     # Save the composed plot as a single file
     final_plot.save(
-        filename=str(output_dir / "metrics_ridgeline.pdf"),
+        filename=str(output_dir / "metrics_ridgeline.png"),
         dpi=300,
         verbose=False,
-        width=6 * len(plots),  # Scale width based on number of plots
+        width=4 * len(plots),
         height=6,
     )
 

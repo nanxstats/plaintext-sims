@@ -7,69 +7,69 @@ from pathlib import Path
 import pandas as pd
 from plotnine import (
     aes,
+    coord_flip,
     element_line,
     element_text,
-    geom_boxplot,
-    geom_point,
-    geom_text,
+    geom_violin,
     ggplot,
     labs,
+    scale_y_continuous,
     theme,
     theme_classic,
 )
 
 
 def plot_results(df: pd.DataFrame, output_dir: Path, metrics: list[str]) -> None:
-    """Create comparative plots with plotnine (ggplot-style)."""
+    """Create comparative ridgeline plots with plotnine."""
     output_dir.mkdir(parents=True, exist_ok=True)
+
+    # Create individual ridgeline plots for each metric
+    plots = []
     for metric in metrics:
+        # Add mean value for fill aesthetic
+        df_with_mean = df.copy()
+        df_with_mean[f"{metric}_mean"] = df_with_mean.groupby("condition")[
+            metric
+        ].transform("mean")
+
         plot = (
-            ggplot(df, aes(x="condition", y=metric, fill="condition"))
-            + geom_boxplot()
-            + labs(title=metric.replace("_", " ").title(), x="Condition", y=metric)
-            + theme(legend_position="none")
-            + theme_classic(base_size=14)
+            ggplot(df_with_mean, aes(x="condition", y=metric, fill=f"{metric}_mean"))
+            + geom_violin(
+                position="identity",
+                style="right",
+                width=1.5,
+                color="none",
+                trim=False,
+                alpha=0.85,
+            )
+            + coord_flip()
+            + labs(title=metric.replace("_", " ").title(), x="", y="")
+            + scale_y_continuous(expand=(0, 0.1))
+            + theme_classic(base_size=12)
             + theme(
-                axis_text=element_text(color="0", size=12),
+                legend_position="none",
+                axis_text=element_text(color="0", size=7),
                 axis_ticks=element_line(color="0", linewidth=0.5),
+                plot_title=element_text(size=9, face="plain"),
             )
         )
-        plot.save(
-            filename=str(output_dir / f"{metric}_boxplot.png"), dpi=300, verbose=False
-        )
+        plots.append(plot)
 
-    trade = (
-        df.groupby("condition")[["total_calendar_time", "num_late_defects"]]
-        .mean()
-        .reset_index()
-    )
-    trade_plot = (
-        ggplot(
-            trade,
-            aes(
-                x="total_calendar_time",
-                y="num_late_defects",
-                color="condition",
-                label="condition",
-            ),
-        )
-        + geom_point(size=3)
-        + geom_text(nudge_x=1.0, nudge_y=0.02, size=9)
-        + labs(
-            x="Mean total time (days)",
-            y="Mean late defects",
-            title="Time vs late defects",
-        )
-        + theme_classic(base_size=14)
-        + theme(
-            axis_text=element_text(color="0", size=12),
-            axis_ticks=element_line(color="0", linewidth=0.5),
-        )
-    )
-    trade_plot.save(
-        filename=str(output_dir / "tradeoff_time_vs_late_defects.png"),
+    # Compose all plots in one column using the / operator
+    if len(plots) == 1:
+        final_plot = plots[0]
+    else:
+        final_plot = plots[0]
+        for plot in plots[1:]:
+            final_plot = final_plot / plot  # type: ignore[assignment]
+
+    # Save the composed plot as a single file
+    final_plot.save(
+        filename=str(output_dir / "metrics_ridgeline.pdf"),
         dpi=300,
         verbose=False,
+        width=6 * len(plots),  # Scale width based on number of plots
+        height=6,
     )
 
 

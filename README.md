@@ -4,6 +4,7 @@
 [![CI tests](https://github.com/nanxstats/plaintext-sims/actions/workflows/ci-tests.yml/badge.svg)](https://github.com/nanxstats/plaintext-sims/actions/workflows/ci-tests.yml)
 [![Mypy check](https://github.com/nanxstats/plaintext-sims/actions/workflows/mypy.yml/badge.svg)](https://github.com/nanxstats/plaintext-sims/actions/workflows/mypy.yml)
 [![Ruff check](https://github.com/nanxstats/plaintext-sims/actions/workflows/ruff-check.yml/badge.svg)](https://github.com/nanxstats/plaintext-sims/actions/workflows/ruff-check.yml)
+![License](https://img.shields.io/github/license/nanxstats/plaintext-sims)
 
 Computational experiments for *The Plaintext Statistician* exploring
 plaintext (Git-first) versus mixed (email/Office) workflows.

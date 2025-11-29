@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import numpy as np
-import pandas as pd
+import polars as pl
 
 from plaintext_sims import (
     WorkflowParams,
@@ -48,11 +48,11 @@ def main() -> None:
         replications=sim_cfg["replications"],
         seed=sim_cfg["seed"] + 1,
     )
-    sim_results = pd.concat([sim_plaintext, sim_mixed], ignore_index=True)
-    sim_results.to_csv(results_dir / "simpy_results.csv", index=False)
+    sim_results = pl.concat([sim_plaintext, sim_mixed], how="vertical")
+    sim_results.write_csv(results_dir / "simpy_results.csv")
 
     sim_summary_df = summarize_metrics(sim_results, metrics=sim_metrics)
-    sim_summary_df.to_csv(results_dir / "simpy_summary.csv", index=False)
+    sim_summary_df.write_csv(results_dir / "simpy_summary.csv")
     plot_results(sim_results, output_dir=results_dir, metrics=sim_metrics)
 
     sim_boot = [
@@ -66,9 +66,7 @@ def main() -> None:
         )
         for m in sim_metrics
     ]
-    pd.DataFrame(sim_boot).to_csv(
-        results_dir / "simpy_bootstrap_effects.csv", index=False
-    )
+    pl.DataFrame(sim_boot).write_csv(results_dir / "simpy_bootstrap_effects.csv")
     sim_summary_text = format_summary_text(sim_results)
     (results_dir / "simpy_summary.txt").write_text(sim_summary_text, encoding="utf-8")
 

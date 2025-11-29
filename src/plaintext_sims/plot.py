@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-import pandas as pd
+import polars as pl
 from ggsci import scale_fill_aaas  # type: ignore[import-untyped]
 from plotnine import (
     aes,
@@ -20,15 +20,16 @@ from plotnine import (
 )
 
 
-def plot_results(df: pd.DataFrame, output_dir: Path, metrics: list[str]) -> None:
+def plot_results(df: pl.DataFrame, output_dir: Path, metrics: list[str]) -> None:
     """Create comparative ridgeline plots with plotnine."""
     output_dir.mkdir(parents=True, exist_ok=True)
 
     # Create individual ridgeline plots for each metric
     plots = []
     for metric in metrics:
+        base_plot = df >> ggplot(aes(x="condition", y=metric, fill="condition"))
         plot = (
-            ggplot(df, aes(x="condition", y=metric, fill="condition"))
+            base_plot
             # First layer: filled violins
             + geom_violin(
                 position="identity",

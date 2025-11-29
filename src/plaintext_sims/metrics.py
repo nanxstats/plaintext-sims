@@ -2,34 +2,38 @@
 
 from __future__ import annotations
 
-from typing import SupportsFloat, cast
-
 import numpy as np
-import pandas as pd
+import polars as pl
 
 
-def summarize_metrics(df: pd.DataFrame, metrics: list[str]) -> pd.DataFrame:
+def summarize_metrics(df: pl.DataFrame, metrics: list[str]) -> pl.DataFrame:
     """Compute descriptive statistics for each metric by condition."""
-    stats = []
-    for cond, group in df.groupby("condition"):
+    grouped = df.partition_by("condition", as_dict=True)
+    stats: list[dict[str, float | str]] = []
+    for condition_key in sorted(grouped.keys()):
+        if isinstance(condition_key, tuple):
+            condition = condition_key[0]
+        else:
+            condition = condition_key
+        group = grouped[condition_key]
         for metric in metrics:
-            series = group[metric]
+            values = group.get_column(metric).to_numpy()
             stats.append(
                 {
-                    "condition": cond,
+                    "condition": condition,
                     "metric": metric,
-                    "mean": series.mean(),
-                    "median": series.median(),
-                    "std": series.std(),
-                    "q10": series.quantile(0.1),
-                    "q90": series.quantile(0.9),
+                    "mean": float(np.mean(values)),
+                    "median": float(np.median(values)),
+                    "std": float(np.std(values, ddof=1)),
+                    "q10": float(np.quantile(values, 0.1, method="linear")),
+                    "q90": float(np.quantile(values, 0.9, method="linear")),
                 }
             )
-    return pd.DataFrame(stats)
+    return pl.DataFrame(stats)
 
 
 def bootstrap_difference(
-    df: pd.DataFrame,
+    df: pl.DataFrame,
     metric: str,
     condition_a: str,
     condition_b: str,
@@ -37,8 +41,8 @@ def bootstrap_difference(
     rng: np.random.Generator,
 ) -> dict[str, float]:
     """Bootstrap the difference in means between two conditions."""
-    a = df[df["condition"] == condition_a][metric].to_numpy()
-    b = df[df["condition"] == condition_b][metric].to_numpy()
+    a = df.filter(pl.col("condition") == condition_a).get_column(metric).to_numpy()
+    b = df.filter(pl.col("condition") == condition_b).get_column(metric).to_numpy()
     deltas = []
     for _ in range(reps):
         delta = (
@@ -55,7 +59,7 @@ def bootstrap_difference(
     }
 
 
-def format_summary_text(df: pd.DataFrame) -> str:
+def format_summary_text(df: pl.DataFrame) -> str:
     """Compose a concise narrative describing the discrete-event simulation."""
     metrics = [
         "total_calendar_time",
@@ -65,16 +69,15 @@ def format_summary_text(df: pd.DataFrame) -> str:
     ]
     lines = []
     for metric in metrics:
-        summary = (
-            df.groupby("condition")[metric]
-            .agg(["mean", "median"])
-            .rename(columns={"mean": "mean", "median": "median"})
-            .astype(float)
+        summary = df.group_by("condition").agg(
+            pl.col(metric).mean().alias("mean"),
+            pl.col(metric).median().alias("median"),
         )
-        mixed_mean_raw = cast(SupportsFloat, summary.loc["mixed", "mean"])
-        plaintext_mean_raw = cast(SupportsFloat, summary.loc["plaintext", "mean"])
-        mixed_mean = float(mixed_mean_raw)
-        plaintext_mean = float(plaintext_mean_raw)
+        summary_by_condition = {
+            row["condition"]: row for row in summary.iter_rows(named=True)
+        }
+        mixed_mean = float(summary_by_condition["mixed"]["mean"])
+        plaintext_mean = float(summary_by_condition["plaintext"]["mean"])
         delta = mixed_mean - plaintext_mean
         direction = "plaintext faster" if delta > 0 else "plaintext slower"
         lines.append(

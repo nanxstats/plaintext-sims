@@ -7,7 +7,7 @@ from dataclasses import dataclass
 from typing import TypedDict
 
 import numpy as np
-import pandas as pd
+import polars as pl
 import simpy
 from tqdm.auto import tqdm
 
@@ -157,7 +157,7 @@ def run_experiment(
     resources: dict[str, int],
     replications: int,
     seed: int,
-) -> pd.DataFrame:
+) -> pl.DataFrame:
     """Run many replications for one condition."""
     rng = np.random.default_rng(seed)
     seeds = rng.integers(0, 1_000_000_000, size=replications)
@@ -170,7 +170,7 @@ def run_experiment(
             "seed": int(sim_seed),
         }
         records.append(record)
-    return pd.DataFrame(records)
+    return pl.DataFrame(records)
 
 
 __all__ = ["WorkflowParams", "run_project", "run_experiment"]

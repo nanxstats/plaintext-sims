@@ -31,6 +31,7 @@ jobs:
       - name: Test with pytest
         run: |
           pip install pytest pytest-cov
+          pip install pyarrow
           pytest --cov=plaintext_sims --cov-report=xml
 
       # - name: Upload coverage reports to Codecov

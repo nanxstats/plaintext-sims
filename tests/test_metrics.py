@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import numpy as np
-import pandas as pd
+import polars as pl
 import pytest
 
 from plaintext_sims.metrics import (
@@ -12,7 +12,7 @@ from plaintext_sims.metrics import (
 
 
 def test_summarize_metrics_returns_expected_rows() -> None:
-    df = pd.DataFrame(
+    df = pl.DataFrame(
         {
             "condition": ["plaintext", "mixed", "plaintext", "mixed"],
             "metric_one": [1.0, 2.0, 3.0, 4.0],
@@ -21,16 +21,16 @@ def test_summarize_metrics_returns_expected_rows() -> None:
     )
     summary = summarize_metrics(df, metrics=["metric_one", "metric_two"])
 
-    assert set(summary["metric"]) == {"metric_one", "metric_two"}
-    assert summary.shape[0] == 4  # two metrics x two conditions
-    assert (
-        pytest.approx(summary.loc[summary["metric"] == "metric_one", "mean"].mean())
-        == 2.5
+    assert set(summary.get_column("metric")) == {"metric_one", "metric_two"}
+    assert summary.height == 4  # two metrics x two conditions
+    metric_one_means = summary.filter(pl.col("metric") == "metric_one").get_column(
+        "mean"
     )
+    assert pytest.approx(metric_one_means.mean()) == 2.5
 
 
 def test_bootstrap_difference_constant_gap() -> None:
-    df = pd.DataFrame(
+    df = pl.DataFrame(
         {
             "condition": ["a"] * 20 + ["b"] * 20,
             "score": [1.0] * 20 + [2.0] * 20,
@@ -55,7 +55,7 @@ def test_bootstrap_difference_constant_gap() -> None:
 
 
 def test_format_summary_text_includes_metrics() -> None:
-    df = pd.DataFrame(
+    df = pl.DataFrame(
         {
             "condition": ["plaintext", "mixed", "plaintext", "mixed"],
             "total_calendar_time": [10.0, 8.0, 10.0, 8.0],

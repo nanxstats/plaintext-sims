@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import numpy as np
-import pandas as pd
+import polars as pl
 import pytest
 
 from plaintext_sims import WorkflowParams, run_experiment, run_project
@@ -62,10 +62,10 @@ def test_run_experiment_produces_dataframe() -> None:
         seed=seed,
     )
 
-    assert isinstance(df, pd.DataFrame)
-    assert len(df) == replications
-    assert df["seed"].tolist() == expected_seeds
-    assert set(df["condition"]) == {"plaintext"}
+    assert isinstance(df, pl.DataFrame)
+    assert df.height == replications
+    assert df.get_column("seed").to_list() == expected_seeds
+    assert set(df.get_column("condition")) == {"plaintext"}
     for column in [
         "total_calendar_time",
         "num_rework_cycles",
@@ -73,5 +73,5 @@ def test_run_experiment_produces_dataframe() -> None:
         "num_late_defects",
         "handover_delay",
     ]:
-        assert column in df
-        assert df[column].ge(0).all()
+        assert column in df.columns
+        assert (df.get_column(column) >= 0).all()

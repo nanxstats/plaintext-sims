@@ -3,7 +3,7 @@ from __future__ import annotations
 import sys
 from pathlib import Path
 
-import pandas as pd
+import polars as pl
 import pytest
 
 from plaintext_sims.plot import plot_results
@@ -13,7 +13,7 @@ from plaintext_sims.plot import plot_results
     sys.platform == "win32", reason="Does not work on GitHub Actions Windows runners"
 )
 def test_plot_results_writes_files(tmp_path: Path) -> None:
-    df = pd.DataFrame(
+    df = pl.DataFrame(
         {
             "condition": ["plaintext", "mixed", "plaintext", "mixed"],
             "total_calendar_time": [10.0, 8.5, 11.0, 9.0],
